@@ -1,0 +1,7 @@
+{% extends 'segmentation/base.html' %} {% block content %}
+
+<img src="data:image/png;base64, {{original|safe}} " height="500" width="500">
+<img src="data:image/png;base64, {{all|safe}} " height="500" width="500">
+<img src="data:image/png;base64, {{edema|safe}} " height="500" width="500">
+<img src="data:image/png;base64, {{core|safe}} " height="500" width="500">
+<img src="data:image/png;base64, {{enhancing|safe}} " height="500" width="500"> {% endblock %}
