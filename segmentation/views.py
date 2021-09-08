@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.views.generic.edit import FormView
 import nibabel as nib
 import numpy as np
+from segmentation.plot3d import *
 
 from django.http import HttpResponse, JsonResponse
 from rest_framework.views import APIView
@@ -43,3 +44,16 @@ def predict(request):
 
 def slicedrop(request):
     return render(request, "segmentation/slicedrop/index.html")
+
+
+
+
+from django.shortcuts import render
+from plotly.offline import plot
+from plotly.graph_objs import Scatter
+
+def plot_3D(request):
+    reader = ImageReader('./data', img_size=128, normalize=True, single_class=False)
+    viewer = ImageViewer3d(reader, mri_downsample=20)
+    fig = viewer.get_3d_scan(0, 't1')
+    return render(request, "segmentation/plot3D.html", context={'fig': fig})

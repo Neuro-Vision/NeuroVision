@@ -9,12 +9,16 @@ import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('Agg')
+import plotly
+from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
+import albumentations as A
 from skimage import data
 from skimage.util import montage 
 import skimage.transform as skTrans
 from skimage.transform import rotate
 from skimage.transform import resize
-from PIL import Image, ImageOps  
+from PIL import Image, ImageOps 
+ 
 
 # neural imaging
 import nilearn as nl
@@ -301,3 +305,9 @@ def handle_uploaded_file(f):
     with open('segmentation/static/upload/'+f.name, 'wb+') as destination:  
         for chunk in f.chunks():  
             destination.write(chunk) 
+
+
+
+    
+
+
