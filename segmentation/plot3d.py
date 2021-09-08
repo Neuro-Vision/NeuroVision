@@ -5,7 +5,9 @@ import os
 import albumentations as A
 import numpy as np
 
-
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
 
 
 
@@ -151,8 +153,9 @@ class ImageViewer3d():
                 l=0, r=0, b=0, t=30
             ),
             legend=dict(itemsizing='constant')
+        
         )
-        return fig
+        return fig.to_html()
 
 # reader = ImageReader('./data', img_size=128, normalize=True, single_class=False)
 # viewer = ImageViewer3d(reader, mri_downsample=20)
