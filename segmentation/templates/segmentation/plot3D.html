@@ -1,6 +1,2 @@
-{% extends 'segmentation/base.html' %} {% block content %}
-
-{% autoescape off %}
-  {{ fig }}
-  {% endautoescape %}
-{%endblock%}
+{% extends 'segmentation/base.html' %} {% block content %} {% autoescape off %} {{fig}} {% endautoescape %}
+<a href="{% url 'download_animation'%}">Download Plot</a> {%endblock%}

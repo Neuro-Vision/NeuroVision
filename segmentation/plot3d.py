@@ -8,10 +8,12 @@ import numpy as np
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.dependencies import Input, Output
+import plotly.express as px
 
-
-
-
+#for plotting 3d and saving to html
+import io
+from base64 import b64encode
 
 
 class ImageReader:
@@ -141,6 +143,7 @@ class ImageViewer3d():
     def get_3d_scan(self, patient_idx:int, scan_type:str='flair') -> go.Figure:
         scan = self.reader.load_patient_scan(patient_idx, scan_type)
         data, num_markers = self.collect_patient_data(scan)
+            
         fig = go.Figure(data=data)
         fig.update_layout(
             title=f"[Patient id:{patient_idx}] brain MRI scan ({num_markers} points)",
@@ -153,12 +156,16 @@ class ImageViewer3d():
                 l=0, r=0, b=0, t=30
             ),
             legend=dict(itemsizing='constant')
-        
         )
-        return fig.to_html()
+        
+        fig.write_html("segmentation/3D Animation.html")
+        
+        return fig
 
-# reader = ImageReader('./data', img_size=128, normalize=True, single_class=False)
-# viewer = ImageViewer3d(reader, mri_downsample=20)
 
-# fig = viewer.get_3d_scan(0, 't1')
-# plotly.offline.iplot(fig)
+# if __name__ == "main" : 
+#     reader = ImageReader('./data', img_size=128, normalize=True, single_class=False)
+#     viewer = ImageViewer3d(reader, mri_downsample=20)
+
+#     fig = viewer.get_3d_scan(0, 't1')
+#     plotly.offline.iplot(fig)

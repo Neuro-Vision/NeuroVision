@@ -354,6 +354,8 @@ function switchToViewer() {
 
 function selectfiles(files) {
 
+    console.log("Type is : ");
+    console.log(typeof files);
     // now switch to the viewer
     switchToViewer();
 
