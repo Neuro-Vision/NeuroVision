@@ -133,7 +133,7 @@ class ImageViewer3d():
             generate_3d_scatter(
                 **tumors[2], opacity=0.4,
                 hover='all', name='Peritumoral invaded tissue'
-            ),
+            ),                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
             generate_3d_scatter(
                 **tumors[4], opacity=0.4,
                 hover='all', name='GD-enhancing tumor'

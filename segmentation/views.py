@@ -32,20 +32,40 @@ from plotly.graph_objs import Scatter
 import pathlib
 from django.http import FileResponse
 
+from segmentation.unet_v2 import *
+
 
 # Create your views here.
 
 
 def predict(request):
+    filename = []
     dummy = []
     if request.method == 'POST':
         for x in request.FILES.getlist("files"):
             handle_uploaded_file(x)
-            nii_file = nib.load("segmentation/static/upload/"+x.name)
-            dummy.append(nii_file.get_fdata())
-        unet = Unet()
-        graph = unet.unet_model(dummy[0],dummy[1])
-        print(graph)
+            # nii_file = nib.load("segmentation/static/upload/"+x.name)
+            # dummy.append(nii_file.get_fdata())
+            filename.append(x.name)
+        # unet = Unet() #------> Version 1
+        # graph = unet.unet_model(dummy[0],dummy[1])
+        # print(graph)
+        
+        unet = UNetV2()
+        prediction = unet.predict(filename)
+        
+        prediction = prediction.squeeze().cpu().detach().numpy()
+        prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))
+        wt,tc,et = prediction
+        print(wt.shape, tc.shape, et.shape)
+        prediction = (wt + tc + et)
+        prediction = np.clip(prediction, 0, 1)
+        print(prediction.shape)
+        
+        # nft_img = nib.Nifti1Image(prediction, og.affine)
+        # nib.save(nft_img, 'predicted'  + '.nii')
+        
+        
         
         return render(request, 'segmentation/slicedrop/index.html', {'data':dummy[0]})
     else :
