@@ -46,7 +46,7 @@ from torch.nn import MSELoss
 
 import albumentations as A
 from albumentations import Compose, HorizontalFlip
-from albumentations.pytorch import ToTensor, ToTensorV2 
+from albumentations.pytorch import  ToTensorV2 
 
 import warnings
 warnings.simplefilter("ignore")
@@ -380,16 +380,16 @@ def get_dataloader(
     )
     return dataloader
 
-dataloader = get_dataloader(dataset=BratsDataset, path_to_csv='train_data.csv', phase='valid', fold=0)
+# dataloader = get_dataloader(dataset=BratsDataset, path_to_csv='train_data.csv', phase='valid', fold=0)
 
-data = next(iter(dataloader))
-data['Id'], data['image'].shape, data['mask'].shape
+# data = next(iter(dataloader))
+# data['Id'], data['image'].shape, data['mask'].shape
 
 
 
 class UNetV2:
     def __init__(self):
-        self.model = torch.load('NeuroVision/segmentation/saved_models/unet-v2.pth')
+        self.model = torch.load('segmentation/saved_models/unet-v2.pth')
         self.data_loader = DataLoad()
         
     def predict(self, data, treshold = 0.33) :
