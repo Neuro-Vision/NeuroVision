@@ -289,7 +289,7 @@ class GlobalConfig:
     # train_root_dir = '../input/brats20-dataset-training-validation/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData'
     # test_root_dir = '../input/brats20-dataset-training-validation/BraTS2020_ValidationData/MICCAI_BraTS2020_ValidationData'
     path_to_csv = './train_data.csv'
-    pretrained_model_path = 'NeuroVision/segmentation/saved_models/unet-v2.pth'
+    pretrained_model_path = 'NeuroVision/segmentation/saved_models/unet-v2-without-gpu.pth'
     train_logs_path = '../input/brats20logs/brats2020logs/unet/train_log.csv'
     ae_pretrained_model_path = '../input/brats20logs/brats2020logs/ae/autoencoder_best_model.pth'
     tab_data = '../input/brats20logs/brats2020logs/data/df_with_voxel_stats_and_latent_features.csv'
@@ -390,7 +390,7 @@ def get_dataloader(
 
 class UNetV2:
     def __init__(self):
-        self.model = torch.load('segmentation/saved_models/unet-v2.pth')
+        self.model = torch.load('segmentation/saved_models/unet-v2-without-gpu.pth')
         self.data_loader = DataLoad()
         
     def predict(self, data, treshold = 0.33) :
