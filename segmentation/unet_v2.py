@@ -46,7 +46,7 @@ from torch.nn import MSELoss
 
 import albumentations as A
 from albumentations import Compose, HorizontalFlip
-from albumentations.pytorch import ToTensor, ToTensorV2 
+from albumentations.pytorch import  ToTensorV2 
 
 import warnings
 warnings.simplefilter("ignore")
@@ -289,7 +289,7 @@ class GlobalConfig:
     # train_root_dir = '../input/brats20-dataset-training-validation/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData'
     # test_root_dir = '../input/brats20-dataset-training-validation/BraTS2020_ValidationData/MICCAI_BraTS2020_ValidationData'
     path_to_csv = './train_data.csv'
-    pretrained_model_path = 'NeuroVision/segmentation/saved_models/unet-v2.pth'
+    pretrained_model_path = 'NeuroVision/segmentation/saved_models/unet-v2-without-gpu.pth'
     train_logs_path = '../input/brats20logs/brats2020logs/unet/train_log.csv'
     ae_pretrained_model_path = '../input/brats20logs/brats2020logs/ae/autoencoder_best_model.pth'
     tab_data = '../input/brats20logs/brats2020logs/data/df_with_voxel_stats_and_latent_features.csv'
@@ -304,7 +304,7 @@ def seed_everything(seed: int):
 config = GlobalConfig()
 seed_everything(config.seed)
 
-class DataLoad:
+class DataLoad(Dataset):
     def __init__(self, phase: str="predict", is_resize: bool=False):
         self.phase = phase
         self.augmentations = get_augmentations(phase)
@@ -319,7 +319,8 @@ class DataLoad:
         # load all modalities
         images = []
         for modality in self.data:
-            img_path = 'segmentation/user_uploads/{modality}'
+            print(modality)
+            img_path = f'segmentation/static/upload/{modality}'
             img = self.load_img(img_path)#.transpose(2, 0, 1)
             
             if self.is_resize:
@@ -380,42 +381,46 @@ def get_dataloader(
     )
     return dataloader
 
-dataloader = get_dataloader(dataset=BratsDataset, path_to_csv='train_data.csv', phase='valid', fold=0)
+#  dataloader = get_dataloader(dataset=BratsDataset, path_to_csv='train_data.csv', phase='valid', fold=0)
 
-data = next(iter(dataloader))
-data['Id'], data['image'].shape, data['mask'].shape
+# data = next(iter(dataloader))
+# data['Id'], data['image'].shape, data['mask'].shape
 
 
 
 class UNetV2:
     def __init__(self):
-        self.model = torch.load('NeuroVision/segmentation/saved_models/unet-v2.pth')
+        self.model = torch.load('segmentation/saved_models/unet-v2-without-gpu.pth')
         self.data_loader = DataLoad()
         
     def predict(self, data, treshold = 0.33) :
         self.data = data
-        data = self.data_loader.get_data(self.data)
-        
+        dataloader = self.data_loader.get_data(self.data)
+        imgs =  dataloader['image']
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        results = {"image": [], "GT": [],"Prediction": []}
-    
-        for i, data in enumerate(dataloader):
-            imgs, targets =  data['image'], data['mask']
-            imgs, targets = imgs.to(device), targets.to(device)
-            logits = model(imgs)
-            probs = torch.sigmoid(logits)
+        results = {"image": [], "Prediction": []}
+        # imgs = imgs.to(device)
+        # for data in dataloader:
+        print(type(dataloader))
+        # imgs, targets =  data['image'], data['mask']
+        # imgs, targets = imgs.to(device), targets.to(device)
+        
+        # imgs = imgs.to(device)
+        # imgs = torch.tensor(imgs)
+        logits = self.model(imgs)
+        probs = torch.sigmoid(logits)
             
-            predictions = (probs >= treshold).float()
-            predictions =  predictions.cpu()
-            targets = targets.cpu()
+        predictions = (probs >= treshold).float()
+        predictions =  predictions.cpu()
+        targets = targets.cpu()
             
-            results["image"].append(imgs.cpu())
-            results["GT"].append(targets)
-            results["Prediction"].append(predictions)
+        results["image"].append(imgs.cpu())
+        # results["GT"].append(targets)
+        results["Prediction"].append(predictions)
             
-            # only 5 pars
-            if (i > 5):    
-                return results
+        # only 5 pars
+        if (i > 5):    
+            return results
             
         return results
         

@@ -2,8 +2,10 @@
 <form method="POST" class="post-form" enctype="multipart/form-data">
 
     {% csrf_token %} {{ form.as_p }}
-    <input type="file" value="demo" name="files" multiple /><br><br>
-    <input type="file" name="files" value="C:\Users\parma\PycharmProjects\pythonProject1\pythonProject\CAnet\Major_Project\Medical_Diagnosis_And_3D_Imaging\segmentation\templates\segmentation\base.html" multiple />
+    <b>Flair</b><input type="file" value="demo" name="files" multiple /><br><br>
+    <b>T1</b><input type="file" name="files" multiple /><br>
+    <b>T1c</b><input type="file" name="files" multiple /><br>
+    <b>T2</b><input type="file" name="files" multiple /><br>
     <button type="submit" class="save btn btn-default">Upload</button>
 
 </form> {% endblock %}
