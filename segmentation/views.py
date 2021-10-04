@@ -33,11 +33,12 @@ import pathlib
 from django.http import FileResponse
 
 from segmentation.unet_v2 import *
+from django.views.decorators.csrf import csrf_exempt
 
-
+    
 # Create your views here.
 
-
+@csrf_exempt
 def predict(request):
     filename = []
     dummy = []
