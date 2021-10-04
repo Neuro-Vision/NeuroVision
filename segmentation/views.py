@@ -45,15 +45,15 @@ def predict(request):
     if request.method == 'POST':
         for x in request.FILES.getlist("files"):
             handle_uploaded_file(x)
-            nii_file = nib.load("segmentation/static/upload/"+x.name)
-            dummy.append(nii_file.get_fdata())
-            # filename.append(x.name)
-        unet = Unet() #------> Version 1
-        graph = unet.unet_model(dummy[0],dummy[1])
-        print(graph)
+            # nii_file = nib.load("segmentation/static/upload/"+x.name)
+            # dummy.append(nii_file.get_fdata())
+            filename.append(x.name)
+        # unet = Unet() #------> Version 1
+        # graph = unet.unet_model(dummy[0],dummy[1])
+        # print(graph)
         
-        # unet = UNetV2()
-        # prediction = unet.predict(filename)
+        unet = UNetV2()
+        prediction = unet.predict(filename)
         
         # prediction = prediction.squeeze().cpu().detach().numpy()
         # prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))

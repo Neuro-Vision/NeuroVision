@@ -1,440 +1,327 @@
-# # from tqdm import tqdm
-# import os
-# import time
-# from random import randint
+import torch
+import torch.nn as nn
+import torch.optim as optim
 
-# import numpy as np
-# from scipy import stats
-# import pandas as pd
-
-# from sklearn.model_selection import train_test_split
-# from sklearn.model_selection import StratifiedKFold
-# from sklearn.preprocessing import StandardScaler
-# from sklearn.svm import SVR
-# from sklearn.model_selection import KFold
-
-# import nibabel as nib
-# import pydicom as pdm
-# import nilearn as nl
-# import nilearn.plotting as nlplt
-# import h5py
-
-# import matplotlib.pyplot as plt
-# from matplotlib import cm
-# import matplotlib.animation as anim
-# import matplotlib.patches as mpatches
-# import matplotlib.gridspec as gridspec
-
-# import seaborn as sns
-# import imageio
-# from skimage.transform import resize
-# from skimage.util import montage
-
-# from IPython.display import Image as show_gif
-# from IPython.display import clear_output
-# from IPython.display import YouTubeVideo
-
-# import torch
-# import torch.nn as nn
-# from torch.utils.data import Dataset, DataLoader
-# import torch.nn.functional as F
-
-# from torch.optim import Adam
-# from torch.optim.lr_scheduler import ReduceLROnPlateau
-# from torch.nn import MSELoss
+import os
+import time
+from random import randint
+from tqdm import tqdm
 
 
-# import albumentations as A
-# from albumentations import Compose, HorizontalFlip
-# from albumentations.pytorch import  ToTensorV2 
+import numpy as np
+from scipy import stats
+import pandas as pd
 
-# import warnings
-# warnings.simplefilter("ignore")
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR
+from sklearn.model_selection import KFold
 
-# class Image3dToGIF3d:
-#     """
-#     Displaying 3D images in 3d axes.
-#     Parameters:
-#         img_dim: shape of cube for resizing.
-#         figsize: figure size for plotting in inches.
-#     """
-#     def __init__(self, 
-#                  img_dim: tuple = (55, 55, 55),
-#                  figsize: tuple = (15, 10),
-#                  binary: bool = False,
-#                  normalizing: bool = True,
-#                 ):
-#         """Initialization."""
-#         self.img_dim = img_dim
-#         print(img_dim)
-#         self.figsize = figsize
-#         self.binary = binary
-#         self.normalizing = normalizing
+import nibabel as nib
+import pydicom as pdm
+import nilearn as nl
+import nilearn.plotting as nlplt
+import h5py
 
-#     def _explode(self, data: np.ndarray):
-#         """
-#         Takes: array and return an array twice as large in each dimension,
-#         with an extra space between each voxel.
-#         """
-#         shape_arr = np.array(data.shape)
-#         size = shape_arr[:3] * 2 - 1
-#         exploded = np.zeros(np.concatenate([size, shape_arr[3:]]),
-#                             dtype=data.dtype)
-#         exploded[::2, ::2, ::2] = data
-#         return exploded
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import matplotlib.animation as anim
+import matplotlib.patches as mpatches
+import matplotlib.gridspec as gridspec
 
-#     def _expand_coordinates(self, indices: np.ndarray):
-#         x, y, z = indices
-#         x[1::2, :, :] += 1
-#         y[:, 1::2, :] += 1
-#         z[:, :, 1::2] += 1
-#         return x, y, z
-    
-#     def _normalize(self, arr: np.ndarray):
-#         """Normilize image value between 0 and 1."""
-#         arr_min = np.min(arr)
-#         return (arr - arr_min) / (np.max(arr) - arr_min)
+import seaborn as sns
+import imageio
+from skimage.transform import resize
+from skimage.util import montage
 
-    
-#     def _scale_by(self, arr: np.ndarray, factor: int):
-#         """
-#         Scale 3d Image to factor.
-#         Parameters:
-#             arr: 3d image for scalling.
-#             factor: factor for scalling.
-#         """
-#         mean = np.mean(arr)
-#         return (arr - mean) * factor + mean
-    
-#     def get_transformed_data(self, data: np.ndarray):
-#         """Data transformation: normalization, scaling, resizing."""
-#         if self.binary:
-#             resized_data = resize(data, self.img_dim, preserve_range=True)
-#             return np.clip(resized_data.astype(np.uint8), 0, 1).astype(np.float32)
-            
-#         norm_data = np.clip(self._normalize(data)-0.1, 0, 1) ** 0.4
-#         scaled_data = np.clip(self._scale_by(norm_data, 2) - 0.1, 0, 1)
-#         resized_data = resize(scaled_data, self.img_dim, preserve_range=True)
+from IPython.display import Image as show_gif
+from IPython.display import clear_output
+from IPython.display import YouTubeVideo
+
+import torch
+import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
+import torch.nn.functional as F
+
+from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.nn import MSELoss
+
+
+import albumentations as A
+from albumentations import Compose, HorizontalFlip
+from albumentations.pytorch import ToTensorV2 
+
+import warnings
+warnings.simplefilter("ignore")
+
+
+
+class BratsDataset(Dataset):
+    def __init__(self,df: pd.DataFrame, phase: str="predict", is_resize: bool=False):
+        self.phase = phase
+        self.augmentations = get_augmentations(phase)
+        self.data_types = ['flair.nii', 't1.nii', 't1c.nii', 't2.nii']
+        self.is_resize = is_resize
+        self.df = df
         
-#         return resized_data
+    # def __len__(self):
+    #     return self.df.shape[0]
     
-#     def plot_cube(self,
-#                   cube,
-#                   title: str = '', 
-#                   init_angle: int = 0,
-#                   make_gif: bool = False,
-#                   path_to_save: str = 'filename.gif'
-#                  ):
-#         """
-#         Plot 3d data.
-#         Parameters:
-#             cube: 3d data
-#             title: title for figure.
-#             init_angle: angle for image plot (from 0-360).
-#             make_gif: if True create gif from every 5th frames from 3d image plot.
-#             path_to_save: path to save GIF file.
-#             """
-#         if self.binary:
-#             facecolors = cm.winter(cube)
-#             print("binary")
-#         else:
-#             if self.normalizing:
-#                 cube = self._normalize(cube)
-#             facecolors = cm.gist_stern(cube)
-#             print("not binary")
+    # def get_data(self, data):
+    #     self.data = data
+    #     # load all modalities
+    #     images = []
+    #     for modality in self.data:
+    #         print(modality)
+    #         img_path = f'/content/{modality}'
+    #         img = self.load_img(img_path)#.transpose(2, 0, 1)
             
-#         facecolors[:,:,:,-1] = cube
-#         facecolors = self._explode(facecolors)
-
-#         filled = facecolors[:,:,:,-1] != 0
-#         x, y, z = self._expand_coordinates(np.indices(np.array(filled.shape) + 1))
-
-#         with plt.style.context("dark_background"):
-
-#             fig = plt.figure(figsize=self.figsize)
-#             ax = fig.gca(projection='3d')
-
-#             ax.view_init(30, init_angle)
-#             ax.set_xlim(right = self.img_dim[0] * 2)
-#             ax.set_ylim(top = self.img_dim[1] * 2)
-#             ax.set_zlim(top = self.img_dim[2] * 2)
-#             ax.set_title(title, fontsize=18, y=1.05)
-
-#             ax.voxels(x, y, z, filled, facecolors=facecolors, shade=False)
-
-#             if make_gif:
-#                 images = []
-#                 for angle in tqdm(range(0, 360, 5)):
-#                     ax.view_init(30, angle)
-#                     fname = str(angle) + '.png'
-
-#                     plt.savefig(fname, dpi=120, format='png', bbox_inches='tight')
-#                     images.append(imageio.imread(fname))
-#                     #os.remove(fname)
-#                 imageio.mimsave(path_to_save, images)
-#                 plt.close()
-
-#             else:
-#                 plt.show()
-
+    #         if self.is_resize:
+    #             img = self.resize(img)
+    
+    #         img = self.normalize(img)
+    #         images.append(img)
+    #     img = np.stack(images)
+    #     img = np.moveaxis(img, (0, 1, 2, 3), (0, 3, 2, 1))
                 
-# class ShowResult:
-  
-#     def mask_preprocessing(self, mask):
-#         """
-#         Test.
-#         """
-#         mask = mask.squeeze().cpu().detach().numpy()
-#         mask = np.moveaxis(mask, (0, 1, 2, 3), (0, 3, 2, 1))
-
-#         mask_WT = np.rot90(montage(mask[0]))
-#         mask_TC = np.rot90(montage(mask[1]))
-#         mask_ET = np.rot90(montage(mask[2]))
-
-#         return mask_WT, mask_TC, mask_ET
-
-#     def image_preprocessing(self, image):
-#         """
-#         Returns image flair as mask for overlaping gt and predictions.
-#         """
-#         image = image.squeeze().cpu().detach().numpy()
-#         image = np.moveaxis(image, (0, 1, 2, 3), (0, 3, 2, 1))
-#         flair_img = np.rot90(montage(image[0]))
-#         return flair_img
+    #     return {
+    #         "image": img,
+    #     }
     
-#     def plot(self, image, ground_truth, prediction):
-#         image = self.image_preprocessing(image)
-#         gt_mask_WT, gt_mask_TC, gt_mask_ET = self.mask_preprocessing(ground_truth)
-#         pr_mask_WT, pr_mask_TC, pr_mask_ET = self.mask_preprocessing(prediction)
+    def __len__(self):
+        return self.df.shape[0]
+    
+    def __getitem__(self, idx):
+        # id_ = self.df.loc[idx, 'Brats20ID']
+        # root_path = self.df.loc[self.df['Brats20ID'] == id_]['path'].values[0]
+        # load all modalities
+        root_path = '/content/'
+        images = []
+        for data_type in self.data_types:
+            img_path = os.path.join(root_path, data_type)
+            img = self.load_img(img_path)#.transpose(2, 0, 1)
+            # print(type(img))
+            if self.is_resize:
+                img = self.resize(img)
+    
+            img = self.normalize(img)
+            images.append(img)
+        img = np.stack(images)
+        img = np.moveaxis(img, (0, 1, 2, 3), (0, 3, 2, 1))
+        id_ = 0
+        print(type(img),len(img))
+        return {
+            "Id": id_,
+            "image": img,
+        }
+
+    def load_img(self, file_path):
+        data = nib.load(file_path)
+        data = np.asarray(data.dataobj)
+        return data.astype(np.float64)
+    
+    def normalize(self, data: np.ndarray):
+        data_min = np.min(data)
+        return (data - data_min) / (np.max(data) - data_min)
+    
+    def resize(self, data: np.ndarray):
+        data = resize(data, (78, 120, 120), preserve_range=True)
+        return data
+    
+
+def get_augmentations(phase):
+    list_transforms = []
+    
+    list_trfms = Compose(list_transforms)
+    return list_trfms
+
+
+def get_dataloader(
+    dataset: torch.utils.data.Dataset,
+    phase: str,
+    fold: int = 0,
+    batch_size: int = 1,
+    num_workers: int = 4,
+    filename = None
+):
+    '''Returns: dataloader for the model training'''
+    # df = pd.read_csv(path_to_csv)
+    
+    # train_df = df.loc[df['fold'] != fold].reset_index(drop=True)
+    # val_df = df.loc[df['fold'] == fold].reset_index(drop=True)
+
+    # df = train_df if phase == "train" else val_df
+
+    data = [['flair.nii']]
+ 
+    # Create the pandas DataFrame
+    df = pd.DataFrame(data, columns = ['Name'])
+
+    dataset = dataset(df, phase)
+    dataloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        pin_memory=True,
+        shuffle=True,   
+    )
+    return dataloader
+
+
+class DoubleConv(nn.Module):
+    """(Conv3D -> BN -> ReLU) * 2"""
+    def __init__(self, in_channels, out_channels, num_groups=8):
+        super().__init__()
+        self.double_conv = nn.Sequential(
+            nn.Conv3d(in_channels, out_channels, kernel_size=3, stride=1, padding=1),
+            #nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=num_groups, num_channels=out_channels),
+            nn.ReLU(inplace=True),
+
+            nn.Conv3d(out_channels, out_channels, kernel_size=3, stride=1, padding=1),
+            #nn.BatchNorm3d(out_channels),
+            nn.GroupNorm(num_groups=num_groups, num_channels=out_channels),
+            nn.ReLU(inplace=True)
+          )
+
+    def forward(self,x):
+        return self.double_conv(x)
+
+    
+class Down(nn.Module):
+
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+        self.encoder = nn.Sequential(
+            nn.MaxPool3d(2, 2),
+            DoubleConv(in_channels, out_channels)
+        )
+    def forward(self, x):
+        return self.encoder(x)
+
+    
+class Up(nn.Module):
+
+    def __init__(self, in_channels, out_channels, trilinear=True):
+        super().__init__()
         
-#         fig, axes = plt.subplots(1, 2, figsize = (35, 30))
-    
-#         [ax.axis("off") for ax in axes]
-#         axes[0].set_title("Ground Truth", fontsize=35, weight='bold')
-#         axes[0].imshow(image, cmap ='bone')
-#         axes[0].imshow(np.ma.masked_where(gt_mask_WT == False, gt_mask_WT),
-#                   cmap='cool_r', alpha=0.6)
-#         axes[0].imshow(np.ma.masked_where(gt_mask_TC == False, gt_mask_TC),
-#                   cmap='autumn_r', alpha=0.6)
-#         axes[0].imshow(np.ma.masked_where(gt_mask_ET == False, gt_mask_ET),
-#                   cmap='autumn', alpha=0.6)
-
-#         axes[1].set_title("Prediction", fontsize=35, weight='bold')
-#         axes[1].imshow(image, cmap ='bone')
-#         axes[1].imshow(np.ma.masked_where(pr_mask_WT == False, pr_mask_WT),
-#                   cmap='cool_r', alpha=0.6)
-#         axes[1].imshow(np.ma.masked_where(pr_mask_TC == False, pr_mask_TC),
-#                   cmap='autumn_r', alpha=0.6)
-#         axes[1].imshow(np.ma.masked_where(pr_mask_ET == False, pr_mask_ET),
-#                   cmap='autumn', alpha=0.6)
-
-#         plt.tight_layout()
-        
-#         plt.show()
-        
-# #show_result = ShowResult()
-# #show_result.plot(data['image'], data['mask'], data['mask'])
-
-
-# def merging_two_gif(path1: str, path2: str, name_to_save: str):
-#     """
-#     Merging GIFs side by side.
-#     Parameters:
-#         path1: path to gif with ground truth.
-#         path2: path to gif with prediction.
-#         name_to_save: name for saving new GIF.
-#     """
-#     #https://stackoverflow.com/questions/51517685/combine-several-gif-horizontally-python
-#     #Create reader object for the gif
-#     gif1 = imageio.get_reader(path1)
-#     gif2 = imageio.get_reader(path2)
-
-#     #If they don't have the same number of frame take the shorter
-#     number_of_frames = min(gif1.get_length(), gif2.get_length()) 
-
-#     #Create writer object
-#     new_gif = imageio.get_writer(name_to_save)
-
-#     for frame_number in range(number_of_frames):
-#         img1 = gif1.get_next_data()
-#         img2 = gif2.get_next_data()
-#         #here is the magic
-#         new_image = np.hstack((img1, img2))
-#         new_gif.append_data(new_image)
-
-#     gif1.close()
-#     gif2.close()    
-#     new_gif.close()
-    
-# #merging_two_gif('BraTS20_Training_001_flair_3d.gif',
-# #                'BraTS20_Training_001_flair_3d.gif', 
-# #                'result.gif')
-
-# def get_all_csv_file(root: str) -> list:
-#     """Extraction all unique ids from file names."""
-#     ids = []
-#     for dirname, _, filenames in os.walk(root):
-#         for filename in filenames:
-#             path = os.path.join(dirname, filename)
-#             if path.endswith(".csv"):
-#                 ids.append(path) 
-#     ids = list(set(filter(None, ids)))
-#     print(f"Extracted {len(ids)} csv files.")
-#     return ids
-
-# #csv_paths = get_all_csv_file("../input/brats20-dataset-training-validation/BraTS2020_TrainingData")
-
-# class GlobalConfig:
-#     root_dir = '../input/brats20-dataset-training-validation'
-#     # train_root_dir = '../input/brats20-dataset-training-validation/BraTS2020_TrainingData/MICCAI_BraTS2020_TrainingData'
-#     # test_root_dir = '../input/brats20-dataset-training-validation/BraTS2020_ValidationData/MICCAI_BraTS2020_ValidationData'
-#     path_to_csv = './train_data.csv'
-#     pretrained_model_path = 'NeuroVision/segmentation/saved_models/unet-v2-without-gpu.pth'
-#     train_logs_path = '../input/brats20logs/brats2020logs/unet/train_log.csv'
-#     ae_pretrained_model_path = '../input/brats20logs/brats2020logs/ae/autoencoder_best_model.pth'
-#     tab_data = '../input/brats20logs/brats2020logs/data/df_with_voxel_stats_and_latent_features.csv'
-#     seed = 55
-    
-# def seed_everything(seed: int):
-#     np.random.seed(seed)
-#     torch.manual_seed(seed)
-#     if torch.cuda.is_available():
-#         torch.cuda.manual_seed(seed)
-    
-# config = GlobalConfig()
-# seed_everything(config.seed)
-
-# class DataLoad(Dataset):
-#     def __init__(self, phase: str="predict", is_resize: bool=False):
-#         self.phase = phase
-#         self.augmentations = get_augmentations(phase)
-#         self.data_types = ['_flair.nii', '_t1.nii', '_t1ce.nii', '_t2.nii']
-#         self.is_resize = is_resize
-        
-#     # def __len__(self):
-#     #     return self.df.shape[0]
-    
-#     def get_data(self, data):
-#         self.data = data
-#         # load all modalities
-#         images = []
-#         for modality in self.data:
-#             print(modality)
-#             img_path = f'segmentation/static/upload/{modality}'
-#             img = self.load_img(img_path)#.transpose(2, 0, 1)
+        if trilinear:
+            self.up = nn.Upsample(scale_factor=2, mode='trilinear', align_corners=True)
+        else:
+            self.up = nn.ConvTranspose3d(in_channels // 2, in_channels // 2, kernel_size=2, stride=2)
             
-#             if self.is_resize:
-#                 img = self.resize(img)
+        self.conv = DoubleConv(in_channels, out_channels)
+
+    def forward(self, x1, x2):
+        x1 = self.up(x1)
+
+        diffZ = x2.size()[2] - x1.size()[2]
+        diffY = x2.size()[3] - x1.size()[3]
+        diffX = x2.size()[4] - x1.size()[4]
+        x1 = F.pad(x1, [diffX // 2, diffX - diffX // 2, diffY // 2, diffY - diffY // 2, diffZ // 2, diffZ - diffZ // 2])
+
+        x = torch.cat([x2, x1], dim=1)
+        return self.conv(x)
+
     
-#             img = self.normalize(img)
-#             images.append(img)
-#         img = np.stack(images)
-#         img = np.moveaxis(img, (0, 1, 2, 3), (0, 3, 2, 1))
-                
-#         return {
-#             "image": img,
-#         }
-    
-#     def load_img(self, file_path):
-#         data = nib.load(file_path)
-#         data = np.asarray(data.dataobj)
-#         return data
-    
-#     def normalize(self, data: np.ndarray):
-#         data_min = np.min(data)
-#         return (data - data_min) / (np.max(data) - data_min)
-    
-#     def resize(self, data: np.ndarray):
-#         data = resize(data, (78, 120, 120), preserve_range=True)
-#         return data
-    
+class Out(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+        self.conv = nn.Conv3d(in_channels, out_channels, kernel_size = 1)
 
-# def get_augmentations(phase):
-#     list_transforms = []
-    
-#     list_trfms = Compose(list_transforms)
-#     return list_trfms
+    def forward(self, x):
+        return self.conv(x)
 
 
-# def get_dataloader(
-#     dataset: torch.utils.data.Dataset,
-#     path_to_csv: str,
-#     phase: str,
-#     fold: int = 0,
-#     batch_size: int = 1,
-#     num_workers: int = 4,
-# ):
-#     '''Returns: dataloader for the model training'''
-#     df = pd.read_csv(path_to_csv)
-    
-#     train_df = df.loc[df['fold'] != fold].reset_index(drop=True)
-#     val_df = df.loc[df['fold'] == fold].reset_index(drop=True)
+class UNet3d(nn.Module):
+    def __init__(self, in_channels, n_classes, n_channels):
+        super().__init__()
+        self.in_channels = in_channels
+        self.n_classes = n_classes
+        self.n_channels = n_channels
 
-#     df = train_df if phase == "train" else val_df
-#     dataset = dataset(df, phase)
-#     dataloader = DataLoader(
-#         dataset,
-#         batch_size=batch_size,
-#         num_workers=num_workers,
-#         pin_memory=True,
-#         shuffle=True,   
-#     )
-#     return dataloader
+        self.conv = DoubleConv(in_channels, n_channels)
+        self.enc1 = Down(n_channels, 2 * n_channels)
+        self.enc2 = Down(2 * n_channels, 4 * n_channels)
+        self.enc3 = Down(4 * n_channels, 8 * n_channels)
+        self.enc4 = Down(8 * n_channels, 8 * n_channels)
 
-# #  dataloader = get_dataloader(dataset=BratsDataset, path_to_csv='train_data.csv', phase='valid', fold=0)
+        self.dec1 = Up(16 * n_channels, 4 * n_channels)
+        self.dec2 = Up(8 * n_channels, 2 * n_channels)
+        self.dec3 = Up(4 * n_channels, n_channels)
+        self.dec4 = Up(2 * n_channels, n_channels)
+        self.out = Out(n_channels, n_classes)
 
-# # data = next(iter(dataloader))
-# # data['Id'], data['image'].shape, data['mask'].shape
+    def forward(self, x):
+        x1 = self.conv(x)
+        x2 = self.enc1(x1)
+        x3 = self.enc2(x2)
+        x4 = self.enc3(x3)
+        x5 = self.enc4(x4)
+
+        mask = self.dec1(x5, x4)
+        mask = self.dec2(mask, x3)
+        mask = self.dec3(mask, x2)
+        mask = self.dec4(mask, x1)
+        mask = self.out(mask)
+        return mask
 
 
+# Specify a path to save to
+# PATH = "/content/unet-v2.pth"
 
-# class UNetV2:
-#     def __init__(self):
-#         self.model = torch.load('segmentation/saved_models/unet-v2-without-gpu.pth')
-#         self.data_loader = DataLoad()
+# # Save
+# # torch.save(net.state_dict(), PATH)
+
+# # Load
+# device = torch.device('cpu')
+# model = UNet3d(in_channels=4, n_classes=3, n_channels=24)
+# model.load_state_dict(torch.load(PATH, map_location=device))
+
+
+# model = torch.load('/content/unet-v2.pth')
+model = UNet3d(in_channels=4, n_classes=3, n_channels=24)
+model.load_state_dict(torch.load("/content/unet-v2.pth", map_location='cuda'))
+model=model.cuda()
+
+class UNetV2:
+    def __init__(self,model):
+        # self.model = torch.load('segmentation/saved_models/unet-v2-without-gpu.pth')
+        # self.data_loader = DataLoad()
+        self.model = model
         
-#     def predict(self, data, treshold = 0.33) :
-#         self.data = data
-#         dataloader = self.data_loader.get_data(self.data)
-#         imgs =  dataloader['image']
-#         device = 'cuda' if torch.cuda.is_available() else 'cpu'
-#         results = {"image": [], "Prediction": []}
-#         # imgs = imgs.to(device)
-#         # for data in dataloader:
-#         print(type(dataloader))
-#         # imgs, targets =  data['image'], data['mask']
-#         # imgs, targets = imgs.to(device), targets.to(device)
-        
-#         # imgs = imgs.to(device)
-#         # imgs = torch.tensor(imgs)
-#         logits = self.model(imgs)
-#         probs = torch.sigmoid(logits)
-            
-#         predictions = (probs >= treshold).float()
-#         predictions =  predictions.cpu()
-#         targets = targets.cpu()
-            
-#         results["image"].append(imgs.cpu())
-#         # results["GT"].append(targets)
-#         results["Prediction"].append(predictions)
-            
-#         # only 5 pars
-#         if (i > 5):    
-#             return results
-            
-#         return results
-        
-        
+   
 
+    def predict(self,filename,threshold = 0.33) :
+      val_dataloader = get_dataloader(BratsDataset,filename = filename, phase='valid', fold=0)
+      device = 'cuda' if torch.cuda.is_available() else 'cpu'
+      print(device)
+      # device = 'cpu'
+      results = {"Id": [],"image": [], "Prediction": []}
+      # self.threshold = threshold
+      with torch.no_grad():
+          for i, data in enumerate(val_dataloader):
+              id_, imgs = data['Id'], data['image']
+              imgs = imgs.to(device)
+              print(type(imgs))
+              logits = model(imgs.float())
+              probs = torch.sigmoid(logits)
+              print(type(probs))
+              print(i)
+              predictions = (probs >= threshold).float()
+              print(type(predictions))
+              predictions =  predictions.cpu()
+              print(type(predictions))
+              # targets = targets.cpu()
+              
+              results["Id"].append(id_)
+              results["image"].append(imgs.cpu())
+              results["Prediction"].append(predictions)
+              # print(results)
+              # only 5 pars
+              if (i > 5):    
+                  return results
+          return results
 
-
-
-
-        
-
-
-
-
-
-
-    
