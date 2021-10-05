@@ -314,12 +314,10 @@ class UNetV2:
               print(type(predictions))
               predictions =  predictions.cpu()
               print(type(predictions))
-              # targets = targets.cpu()
               
               results["Id"].append(id_)
               results["image"].append(imgs.cpu())
               results["Prediction"].append(predictions)
-              # print(results)
               # only 5 pars
               if (i > 5):    
                   return results
