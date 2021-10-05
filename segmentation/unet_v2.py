@@ -98,7 +98,7 @@ class BratsDataset(Dataset):
         # id_ = self.df.loc[idx, 'Brats20ID']
         # root_path = self.df.loc[self.df['Brats20ID'] == id_]['path'].values[0]
         # load all modalities
-        root_path = 'static/upload/'
+        root_path = 'segmentation/static/upload/'
         images = []
         for data_type in self.filename:
             img_path = os.path.join(root_path, data_type)
