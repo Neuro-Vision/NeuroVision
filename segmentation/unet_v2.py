@@ -59,12 +59,13 @@ warnings.simplefilter("ignore")
 
 
 class BratsDataset(Dataset):
-    def __init__(self,df: pd.DataFrame, phase: str="predict", is_resize: bool=False):
+    def __init__(self,df: pd.DataFrame, phase: str="predict", is_resize: bool=False, filename=None):
         self.phase = phase
         self.augmentations = get_augmentations(phase)
         self.data_types = ['flair.nii', 't1.nii', 't1c.nii', 't2.nii']
         self.is_resize = is_resize
         self.df = df
+        self.filename = filename
         
     # def __len__(self):
     #     return self.df.shape[0]
@@ -97,9 +98,9 @@ class BratsDataset(Dataset):
         # id_ = self.df.loc[idx, 'Brats20ID']
         # root_path = self.df.loc[self.df['Brats20ID'] == id_]['path'].values[0]
         # load all modalities
-        root_path = '/content/'
+        root_path = 'static/upload/'
         images = []
-        for data_type in self.data_types:
+        for data_type in self.filename:
             img_path = os.path.join(root_path, data_type)
             img = self.load_img(img_path)#.transpose(2, 0, 1)
             # print(type(img))
@@ -154,12 +155,12 @@ def get_dataloader(
 
     # df = train_df if phase == "train" else val_df
 
-    data = [['flair.nii']]
+    data = [['0']]
  
     # Create the pandas DataFrame
     df = pd.DataFrame(data, columns = ['Name'])
 
-    dataset = dataset(df, phase)
+    dataset = dataset(df, phase, filename=filename)
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -282,15 +283,18 @@ class UNet3d(nn.Module):
 
 
 # model = torch.load('/content/unet-v2.pth')
-model = UNet3d(in_channels=4, n_classes=3, n_channels=24)
-model.load_state_dict(torch.load("/content/unet-v2.pth", map_location='cuda'))
-model=model.cuda()
+# model = UNet3d(in_channels=4, n_classes=3, n_channels=24)
+# model.load_state_dict(torch.load("/content/unet-v2.pth", map_location='cuda'))
+# model=model.cuda()
 
 class UNetV2:
-    def __init__(self,model):
+    def __init__(self):
+        self.model = UNet3d(in_channels=4, n_classes=3, n_channels=24)
+        self.model.load_state_dict(torch.load("/content/unet-v2.pth", map_location='cuda'))
+        self.model=self.model.cuda()
         # self.model = torch.load('segmentation/saved_models/unet-v2-without-gpu.pth')
         # self.data_loader = DataLoad()
-        self.model = model
+        # self.model = model
         
    
 
@@ -306,7 +310,7 @@ class UNetV2:
               id_, imgs = data['Id'], data['image']
               imgs = imgs.to(device)
               print(type(imgs))
-              logits = model(imgs.float())
+              logits = self.model(imgs.float())
               probs = torch.sigmoid(logits)
               print(type(probs))
               print(i)

@@ -55,17 +55,17 @@ def predict(request):
         unet = UNetV2()
         prediction = unet.predict(filename)
         
-        # prediction = prediction.squeeze().cpu().detach().numpy()
-        # prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))
-        # wt,tc,et = prediction
-        # print(wt.shape, tc.shape, et.shape)
-        # prediction = (wt + tc + et)
-        # prediction = np.clip(prediction, 0, 1)
-        # print(prediction.shape)
-        
-        # nft_img = nib.Nifti1Image(prediction, og.affine)
-        # nib.save(nft_img, 'predicted'  + '.nii')
-        
+        prediction = prediction.squeeze().cpu().detach().numpy()
+        prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))
+        wt,tc,et = prediction
+        print(wt.shape, tc.shape, et.shape)
+        prediction = (wt + tc + et)
+        prediction = np.clip(prediction, 0, 1)
+        print(prediction.shape)
+        og = nib.load(f"static/upload/{filename[0]}")
+        nft_img = nib.Nifti1Image(prediction, og.affine)
+        nib.save(nft_img, 'predicted'  + '.nii')
+        print("Segmentation Done")
         
         
         return render(request, 'segmentation/slicedrop/index.html', {'data':dummy[0]})
