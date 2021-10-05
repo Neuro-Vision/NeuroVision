@@ -95,6 +95,8 @@ class BratsDataset(Dataset):
         return self.df.shape[0]
     
     def __getitem__(self, idx):
+        print(f"In predict function:{self.filename}")
+
         # id_ = self.df.loc[idx, 'Brats20ID']
         # root_path = self.df.loc[self.df['Brats20ID'] == id_]['path'].values[0]
         # load all modalities
@@ -156,7 +158,8 @@ def get_dataloader(
     # df = train_df if phase == "train" else val_df
 
     data = [['0']]
- 
+    print(f"In get_dataloader function:{filename}")
+
     # Create the pandas DataFrame
     df = pd.DataFrame(data, columns = ['Name'])
 
@@ -299,6 +302,7 @@ class UNetV2:
    
 
     def predict(self,filename,threshold = 0.33) :
+      print(f"In predict function:{filename}")
       val_dataloader = get_dataloader(BratsDataset,filename = filename, phase='valid', fold=0)
       device = 'cuda' if torch.cuda.is_available() else 'cpu'
       print(device)
