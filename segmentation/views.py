@@ -44,6 +44,7 @@ def predict(request):
     dummy = []
     if request.method == 'POST':
         for x in request.FILES.getlist("files"):
+            print("Hello")
             print(x.name)
             f = handle_uploaded_file(x)
             # nii_file = nib.load("segmentation/static/upload/"+x.name)
