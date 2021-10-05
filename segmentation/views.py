@@ -48,6 +48,7 @@ def predict(request):
             # nii_file = nib.load("segmentation/static/upload/"+x.name)
             # dummy.append(nii_file.get_fdata())
             filename.append(x.name)
+            print(filename)
         # unet = Unet() #------> Version 1
         # graph = unet.unet_model(dummy[0],dummy[1])
         # print(graph)
