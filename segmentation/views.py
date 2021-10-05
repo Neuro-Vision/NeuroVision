@@ -44,6 +44,7 @@ def predict(request):
     dummy = []
     if request.method == 'POST':
         print("Hello")
+        print(len(FILES.getlist("files")))
         for x in request.FILES.getlist("files"):
             print("Hello")
             print(x.name)
