@@ -44,11 +44,11 @@ def predict(request):
     dummy = []
     if request.method == 'POST':
         for x in request.FILES.getlist("files"):
-            handle_uploaded_file(x)
+            f = handle_uploaded_file(x)
             # nii_file = nib.load("segmentation/static/upload/"+x.name)
             # dummy.append(nii_file.get_fdata())
-            filename.append(x.name)
-            print(filename)
+            filename.append(f)
+            print(f,filename)
         # unet = Unet() #------> Version 1
         # graph = unet.unet_model(dummy[0],dummy[1])
         # print(graph)
