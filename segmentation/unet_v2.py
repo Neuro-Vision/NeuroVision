@@ -51,7 +51,7 @@ from torch.nn import MSELoss
 
 import albumentations as A
 from albumentations import Compose, HorizontalFlip
-from albumentations.pytorch import ToTensorV2 
+# from albumentations.pytorch import ToTensorV2 
 
 import warnings
 warnings.simplefilter("ignore")
