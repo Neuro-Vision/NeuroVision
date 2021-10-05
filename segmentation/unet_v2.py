@@ -290,7 +290,7 @@ class UNet3d(nn.Module):
 class UNetV2:
     def __init__(self):
         self.model = UNet3d(in_channels=4, n_classes=3, n_channels=24)
-        self.model.load_state_dict(torch.load("saved_models/unet-v2.pth", map_location='cuda'))
+        self.model.load_state_dict(torch.load("segmentation/saved_models/unet-v2.pth", map_location='cuda'))
         self.model=self.model.cuda()
         # self.model = torch.load('segmentation/saved_models/unet-v2-without-gpu.pth')
         # self.data_loader = DataLoad()
