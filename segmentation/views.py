@@ -59,7 +59,7 @@ def predict(request):
         # print(graph)
 
         unet = UNetV2()
-        prediction = unet.predict(filename)
+        # prediction = unet.predict(filename)
 
         # prediction = prediction.squeeze().cpu().detach().numpy()
         # prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))
@@ -73,7 +73,7 @@ def predict(request):
         # nib.save(nft_img, 'predicted'  + '.nii')
         # print("Segmentation Done")
 
-        prediction = unet.predict()['Prediction'][0]
+        prediction = unet.predict(filename)['Prediction'][0]
         print(type(prediction))
         # print(prediction)
         prediction = (prediction).squeeze().cpu().detach().numpy()
