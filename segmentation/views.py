@@ -15,11 +15,12 @@ from .utils import Unet
 import matplotlib.pyplot as plt
 from io import BytesIO, StringIO
 import io
-import urllib, base64
+import urllib
+import base64
 import cv2
 
 
-from .utils import handle_uploaded_file  
+from .utils import handle_uploaded_file
 from segmentation.forms import UploadFile
 
 import mimetypes
@@ -35,7 +36,7 @@ from django.http import FileResponse
 from segmentation.unet_v2 import *
 from django.views.decorators.csrf import csrf_exempt
 
-    
+
 # Create your views here.
 
 @csrf_exempt
@@ -52,28 +53,43 @@ def predict(request):
             # nii_file = nib.load("segmentation/static/upload/"+x.name)
             # dummy.append(nii_file.get_fdata())
             filename.append(f)
-            print(f,filename)
+            print(f, filename)
         # unet = Unet() #------> Version 1
         # graph = unet.unet_model(dummy[0],dummy[1])
         # print(graph)
-        
+
         unet = UNetV2()
         prediction = unet.predict(filename)
-        
-        prediction = prediction.squeeze().cpu().detach().numpy()
+
+        # prediction = prediction.squeeze().cpu().detach().numpy()
+        # prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))
+        # wt,tc,et = prediction
+        # print(wt.shape, tc.shape, et.shape)
+        # prediction = (wt + tc + et)
+        # prediction = np.clip(prediction, 0, 1)
+        # print(prediction.shape)
+        # og = nib.load(f"static/upload/{filename[0]}")
+        # nft_img = nib.Nifti1Image(prediction, og.affine)
+        # nib.save(nft_img, 'predicted'  + '.nii')
+        # print("Segmentation Done")
+
+        prediction = unet.predict()['Prediction'][0]
+        print(type(prediction))
+        # print(prediction)
+        prediction = (prediction).squeeze().cpu().detach().numpy()
         prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))
-        wt,tc,et = prediction
+        wt, tc, et = prediction
         print(wt.shape, tc.shape, et.shape)
         prediction = (wt + tc + et)
         prediction = np.clip(prediction, 0, 1)
         print(prediction.shape)
-        og = nib.load(f"static/upload/{filename[0]}")
+        
+        og = nib.load('segmentation/upload/flair.nii')
         nft_img = nib.Nifti1Image(prediction, og.affine)
-        nib.save(nft_img, 'predicted'  + '.nii')
-        print("Segmentation Done")
-        
-        
-        return render(request, 'segmentation/slicedrop/index.html', {'data':dummy[0]})
+        nib.save(nft_img, 'segmentation/upload/predicted'  + '.nii')
+
+
+        return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
     else :
         student = UploadFile()  
         return render(request,"segmentation/index.html")  
