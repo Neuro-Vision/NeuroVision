@@ -84,9 +84,9 @@ def predict(request):
         prediction = np.clip(prediction, 0, 1)
         print(prediction.shape)
         
-        og = nib.load('segmentation/upload/flair.nii')
+        og = nib.load('segmentation/static/upload/flair.nii')
         nft_img = nib.Nifti1Image(prediction, og.affine)
-        nib.save(nft_img, 'segmentation/upload/predicted'  + '.nii')
+        nib.save(nft_img, 'segmentation/static/upload/predicted'  + '.nii')
 
 
         return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
