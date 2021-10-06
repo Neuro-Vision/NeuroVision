@@ -89,7 +89,8 @@ def predict(request):
         nib.save(nft_img, 'segmentation/static/upload/predicted'  + '.nii')
 
 
-        return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
+        # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
+        return render(request, 'segmentation/index.html')
     else :
         student = UploadFile()  
         return render(request,"segmentation/index.html")  
