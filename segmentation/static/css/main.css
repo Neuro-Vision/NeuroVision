@@ -10,8 +10,7 @@ body {
 
 .page-header {
     background-color: #000000;
-    margin-top: 0;
-    margin-bottom: 40px;
+    margin-top: 10px 10px 40px 10px;
     padding: 20px 20px 20px 40px;
 }
 
