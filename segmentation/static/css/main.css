@@ -9,7 +9,7 @@ body {
 }
 
 .page-header {
-    background-color: #C25100;
+    background-color: #000000;
     margin-top: 0;
     margin-bottom: 40px;
     padding: 20px 20px 20px 40px;
@@ -19,7 +19,7 @@ body {
 .page-header h1 a,
 .page-header h1 a:visited,
 .page-header h1 a:active {
-    color: #000000;
+    color: #ffffff;
     font-size: 36pt;
     text-decoration: none;
 }
