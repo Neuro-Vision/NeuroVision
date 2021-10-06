@@ -88,9 +88,14 @@ def predict(request):
         nft_img = nib.Nifti1Image(prediction, og.affine)
         nib.save(nft_img, 'NeuroVision/segmentation/static/upload/predicted'  + '.nii')
 
+        reader = ImageReader('./data', img_size=128, normalize=True, single_class=False)
+        viewer = ImageViewer3d(reader, mri_downsample=20)
+        fig = viewer.get_3d_scan(0, 't1')
+
+        return render(request, "segmentation/plot3D.html", context={'fig': fig.to_html()})
 
         # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
-        return render(request, 'segmentation/index.html')
+        # return render(request, 'segmentation/index.html')
     else :
         student = UploadFile()  
         return render(request,"segmentation/index.html")  
