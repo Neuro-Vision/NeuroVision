@@ -60,7 +60,7 @@ def predict(request):
 
         unet = UNetV2()
         # prediction = unet.predict(filename)
-
+        filename = []
         # prediction = prediction.squeeze().cpu().detach().numpy()
         # prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))
         # wt,tc,et = prediction
