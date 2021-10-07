@@ -83,7 +83,7 @@ def predict(request):
         prediction = (wt + tc + et)
         prediction = np.clip(prediction, 0, 1)
         print(prediction.shape)
-        
+        print(np.unique(prediction))
         og = nib.load('segmentation/static/upload/flair.nii')
         nft_img = nib.Nifti1Image(prediction, og.affine)
         nib.save(nft_img, 'NeuroVision/segmentation/static/upload/predicted'  + '.nii')
