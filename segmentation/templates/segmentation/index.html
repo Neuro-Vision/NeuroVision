@@ -1,6 +1,5 @@
 {% extends 'segmentation/base.html' %} {% block content %}
 <form method="POST" class="post-form" enctype="multipart/form-data">
-
     {% csrf_token %} {{ form.as_p }}
     <b>Flair</b><input type="file" value="demo" name="files" multiple /><br><br>
     <b>T1</b><input type="file" name="files" multiple /><br>
