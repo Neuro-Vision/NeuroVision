@@ -102,7 +102,7 @@ class BratsDataset(Dataset):
         # load all modalities
         root_path = 'segmentation/static/upload/'
         images = []
-        for data_type in self.filename:
+        for data_type in self.data_types:
             img_path = os.path.join(root_path, data_type)
             img = self.load_img(img_path)#.transpose(2, 0, 1)
             # print(type(img))

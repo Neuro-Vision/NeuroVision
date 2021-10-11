@@ -33,10 +33,12 @@ class ImageReader:
         self.root=root
         
     def read_file(self) -> dict:
-        scan_type = 'flair (2)'
-        original = 'segmentation/BraTS20_Training_001_flair (2).nii'
+        scan_type = 'flair'
+        original = 'segmentation/static/upload/flair.nii'
         raw_image = nib.load(original).get_fdata()
-        raw_mask = nib.load(original.replace(scan_type, 'seg (1)')).get_fdata()
+        # raw_mask = nib.load(original.replace(scan_type, 'seg (1)')).get_fdata()
+        raw_mask = nib.load('segmentation/static/upload/predicted.nii').get_fdata()
+
         print(raw_mask)
         processed_frames, processed_masks = [], []
         for frame_idx in range(raw_image.shape[2]):
@@ -61,7 +63,7 @@ class ImageReader:
     def load_patient_scan(self, idx:int, scan_type:str='flair') -> dict:
         patient_id = str(idx).zfill(5)
         # scan_filename = f'{self.root}/BraTS2021_{patient_id}/BraTS2021_{patient_id}_{scan_type}.nii.gz'
-        dummy_file = "BraTS20_Training_001_flair.nii"
+        dummy_file = "flair.nii"
         return self.read_file()
 
 import plotly.graph_objects as go
