@@ -97,7 +97,8 @@ def predict(request):
 
         # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
         # return render(request, 'segmentation/index.html')
-        return render(request, 'segmentation/option.html')
+        response = redirect('/segmentation/option.html/')
+        return response
     else :
         student = UploadFile()  
         return render(request,"segmentation/index.html")  
