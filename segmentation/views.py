@@ -18,7 +18,7 @@ import io
 import urllib
 import base64
 import cv2
-
+from django.http import HttpResponseRedirect
 
 from .utils import handle_uploaded_file
 from segmentation.forms import UploadFile
@@ -93,7 +93,7 @@ def predict(request):
 
         # return render(request, "segmentation/plot3D.html", context={'fig': fig.to_html()})
 
-        return redirect(reverse('options'))
+        return HttpResponseRedirect(reverse('options'))
 
         # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
         # return render(request, 'segmentation/index.html')
