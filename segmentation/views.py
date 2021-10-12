@@ -99,7 +99,7 @@ def predict(request):
         # return render(request, 'segmentation/index.html')
     else :
         student = UploadFile()  
-        return render(request,"segmentation/index.html")  
+        return render(request,"options/")  
 
 def slicedrop(request):
     return render(request, "segmentation/slicedrop/index.html")
@@ -128,3 +128,6 @@ def download_file(request):
     response['Content-Disposition'] = "attachment; filename=%s" % filename
     # Return the response value
     return response
+
+def options(request) :
+    return render(request, "segmentation/option.html")

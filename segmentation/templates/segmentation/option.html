@@ -1,8 +1,10 @@
 {% extends 'segmentation/base.html' %} {% block content %}
 <form method="POST" class="post-form" enctype="multipart/form-data">
     {% csrf_token %} {{ form.as_p }}
-
     <button type="Visualize" class="visualize btn btn-default">Visualize</button>
-    <button type="Report" class="report btn btn-default">Report</button>
+</form>
 
-</form> {% endblock %}
+<form method="POST" class="post-form" enctype="multipart/form-data">
+    {% csrf_token %} {{ form.as_p }}
+    <button type="Report" class="report btn btn-default">Report</button>
+</form>{% endblock %}
