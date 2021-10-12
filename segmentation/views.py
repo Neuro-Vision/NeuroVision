@@ -93,13 +93,13 @@ def predict(request):
 
         # return render(request, "segmentation/plot3D.html", context={'fig': fig.to_html()})
 
-        return render(request, "segmentation/option.html")
+        return redirect('option/') 
 
         # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
         # return render(request, 'segmentation/index.html')
     else :
         student = UploadFile()  
-        return redirect('option/') 
+        return render(request,"segmentation/index.html")  
 
 def slicedrop(request):
     return render(request, "segmentation/slicedrop/index.html")
