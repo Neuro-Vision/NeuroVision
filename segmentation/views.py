@@ -93,7 +93,7 @@ def predict(request):
 
         # return render(request, "segmentation/plot3D.html", context={'fig': fig.to_html()})
 
-        return HttpResponseRedirect(reverse('option'))
+        return redirect('/option')
 
         # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
         # return render(request, 'segmentation/index.html')
