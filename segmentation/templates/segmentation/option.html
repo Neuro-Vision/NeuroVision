@@ -1,4 +1,4 @@
-{% extends 'segmentation/option.html' %} {% block content %}
+{% extends 'segmentation/base.html' %} {% block content %}
 <form method="POST" class="post-form" enctype="multipart/form-data">
     {% csrf_token %} {{ form.as_p }}
     <button type="Visualize" class="save btn btn-default">Visualize</button>
