@@ -6,7 +6,7 @@ from django.views.generic.edit import FormView
 import nibabel as nib
 import numpy as np
 from segmentation.plot3d import *
-
+from django.urls import reverse
 from django.http import HttpResponse, JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -93,7 +93,7 @@ def predict(request):
 
         # return render(request, "segmentation/plot3D.html", context={'fig': fig.to_html()})
 
-        return redirect('/option/') 
+        return redirect(reverse('option/'))
 
         # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
         # return render(request, 'segmentation/index.html')
