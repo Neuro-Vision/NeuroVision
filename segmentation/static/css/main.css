@@ -78,3 +78,11 @@ h4 {
     color: #FFFFFF;
     background-color: #C25100;
 }
+
+.visualize {
+    margin-left: 30%;
+}
+
+.report {
+    margin-right: 30%;
+}
