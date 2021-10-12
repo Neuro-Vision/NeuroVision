@@ -99,7 +99,7 @@ def predict(request):
         # return render(request, 'segmentation/index.html')
     else :
         student = UploadFile()  
-        return render(request,"options/")  
+        return redirect('option/') 
 
 def slicedrop(request):
     return render(request, "segmentation/slicedrop/index.html")
