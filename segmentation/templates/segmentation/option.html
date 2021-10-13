@@ -1,10 +1,41 @@
 {% extends 'segmentation/base.html' %} {% block content %}
-<form method="POST" class="post-form" enctype="multipart/form-data">
+<!-- <form method="POST" class="post-form" enctype="multipart/form-data">
     {% csrf_token %} {{ form.as_p }}
+    <input type="text">
     <button type="Visualize" class="visualize btn btn-default">Visualize</button>
 </form>
 
 <form method="POST" class="post-form" enctype="multipart/form-data">
     {% csrf_token %} {{ form.as_p }}
     <button type="Report" class="report btn btn-default">Report</button>
-</form>{% endblock %}
+</form> -->
+<center>
+    <div class="clearfix">
+        <section class="one">
+            <p>Visualization</p>
+            <div class="w3-show-inline-block">
+                <form method="POST" class="post-form" enctype="multipart/form-data">
+                    {% csrf_token %} {{ form.as_p }}
+                    <input type="text" value="animation" name="choice" hidden>
+                    <button type="Visualize" class=" btn btn-info" data-inline="true">Animation</button>
+                </form>
+            </div>
+            <div class="w3-show-inline-block">
+                <form method="POST" class="post-form" enctype="multipart/form-data">
+                    {% csrf_token %} {{ form.as_p }}
+                    <input type="hidden" value="gif" name="choice" hidden>
+                    <button type="Visualize" class=" btn btn-warning" data-inline="true">View GIF</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="two">
+            <p>Report</p>
+            <form method="POST" class="post-form" enctype="multipart/form-data">
+                {% csrf_token %} {{ form.as_p }}
+                <button type="Report" class=" btn btn-secondary">Report</button>
+            </form>
+        </section>
+    </div>
+</center>
+{% endblock %}
