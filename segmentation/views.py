@@ -58,7 +58,7 @@ def predict(request):
         # graph = unet.unet_model(dummy[0],dummy[1])
         # print(graph)
 
-        unet = UNetV2()
+        # unet = UNetV2()
         # prediction = unet.predict(filename)
         # prediction = prediction.squeeze().cpu().detach().numpy()
         # prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))
@@ -71,7 +71,7 @@ def predict(request):
         # nft_img = nib.Nifti1Image(prediction, og.affine)
         # nib.save(nft_img, 'predicted'  + '.nii')
         # print("Segmentation Done")
-
+        """
         prediction = unet.predict(filename)['Prediction'][0]
         print(type(prediction))
         # print(prediction)
@@ -90,14 +90,14 @@ def predict(request):
         reader = ImageReader('./data', img_size=128, normalize=True, single_class=False)
         viewer = ImageViewer3d(reader, mri_downsample=20)
         fig = viewer.get_3d_scan(0, 't1')
-
+        """
         # return render(request, "segmentation/plot3D.html", context={'fig': fig.to_html()})
 
-        # return redirect('/option/')
+        return redirect('/option/')
 
         # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
         # return render(request, 'segmentation/index.html')
-        response = redirect('/segmentation/option.html/')
+        # response = redirect('/segmentation/option.html/')
         return response
     else :
         student = UploadFile()  
