@@ -45,7 +45,6 @@ def predict(request):
     dummy = []
     if request.method == 'POST':
         print("Hello")
-        # print(len(FILES.getlist("files")))
         for x in request.FILES.getlist("files"):
             print("Hello")
             print(x.name)
@@ -59,18 +58,6 @@ def predict(request):
         # print(graph)
 
         # unet = UNetV2()
-        # prediction = unet.predict(filename)
-        # prediction = prediction.squeeze().cpu().detach().numpy()
-        # prediction = np.moveaxis(prediction, (0, 1, 2, 3), (0, 3, 2, 1))
-        # wt,tc,et = prediction
-        # print(wt.shape, tc.shape, et.shape)
-        # prediction = (wt + tc + et)
-        # prediction = np.clip(prediction, 0, 1)
-        # print(prediction.shape)
-        # og = nib.load(f"static/upload/{filename[0]}")
-        # nft_img = nib.Nifti1Image(prediction, og.affine)
-        # nib.save(nft_img, 'predicted'  + '.nii')
-        # print("Segmentation Done")
         """
         prediction = unet.predict(filename)['Prediction'][0]
         print(type(prediction))
@@ -93,14 +80,12 @@ def predict(request):
         """
         # return render(request, "segmentation/plot3D.html", context={'fig': fig.to_html()})
 
-        # return redirect('/option/')
-
-        return redirect('https://du34gldpwq-496ff2e9c6d22116-8000-colab.googleusercontent.com/option/')
+        return redirect('/option/')
 
         # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
         # return render(request, 'segmentation/index.html')
         # response = redirect('/segmentation/option.html/')
-        return response
+        # return response
     else :
         student = UploadFile()  
         return render(request,"segmentation/index.html")  
@@ -134,4 +119,17 @@ def download_file(request):
     return response
 
 def options(request) :
-    return render(request, "segmentation/option.html")
+
+    if request.method == 'POST':
+        option = request.POST['choice']
+        if option == 'animation' :
+            return redirect('/plot3D')
+        elif option == 'gif' :
+            return redirect('/3dgif')
+        elif option == 'report' :
+            return redirect('/report')
+    else : 
+        return render(request, "segmentation/option.html")
+
+def gif(request) :
+    return render(request, "segmentation/view_gif.html")
