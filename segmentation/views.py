@@ -93,7 +93,9 @@ def predict(request):
         """
         # return render(request, "segmentation/plot3D.html", context={'fig': fig.to_html()})
 
-        return redirect('/option/')
+        # return redirect('/option/')
+
+        return redirect('https://du34gldpwq-496ff2e9c6d22116-8000-colab.googleusercontent.com/option/')
 
         # return render(request, 'segmentation/slicedrop/index.html', {'data': dummy[0]})
         # return render(request, 'segmentation/index.html')
