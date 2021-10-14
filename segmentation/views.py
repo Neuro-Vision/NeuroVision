@@ -104,11 +104,13 @@ def download_file(request):
     # Define Django project base directory
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # Define text file name
-    filename = '3D Animation.html'
+    # filename = '3D Animation.html'
+    filename = 'Ground_Truth_BraTS20_Training_024_3d.gif'
     # Define the full file path
-    filepath = BASE_DIR + '/segmentation/' + filename
+    filepath = BASE_DIR + '/segmentation/static/gifs/' + filename
+    filepath = filepath
     # Open the file for reading content
-    path = open(filepath, 'r')
+    path = open(filepath, 'rb')
     # Set the mime type
     mime_type, _ = mimetypes.guess_type(filepath)
     # Set the return value of the HttpResponse
