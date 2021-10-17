@@ -92,11 +92,11 @@ h4 {
 
 .clearfix {
     overflow: hidden;
-    margin-left: 15vw;
+    margin-left: 2vw;
 }
 
 section {
-    width: 40%;
+    width: 50%;
     min-height: 200px;
     font-weight: bold;
     text-transform: uppercase;

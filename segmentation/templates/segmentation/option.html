@@ -31,11 +31,27 @@
 
         <section class="two">
             <p>Report</p>
-            <form method="POST" class="post-form" enctype="multipart/form-data">
-                {% csrf_token %} {{ form.as_p }}
-                <input type="hidden" value="report" name="choice" hidden>
-                <button type="Report" class=" btn btn-secondary">Report</button>
-            </form>
+            <div class="w3-show-inline-block">
+                <form method="POST" class="post-form" enctype="multipart/form-data">
+                    {% csrf_token %} {{ form.as_p }}
+                    <input type="hidden" value="survival" name="choice" hidden>
+                    <button type="Report" class=" btn btn-secondary">Survival Days</button>
+                </form>
+            </div>
+            <div class="w3-show-inline-block">
+                <form method="POST" class="post-form" enctype="multipart/form-data">
+                    {% csrf_token %} {{ form.as_p }}
+                    <input type="hidden" value="2d-slice" name="choice" hidden>
+                    <button type="Report" class=" btn btn-success">2-D Slizer</button>
+                </form>
+            </div>
+            <div class="w3-show-inline-block">
+                <form method="POST" class="post-form" enctype="multipart/form-data">
+                    {% csrf_token %} {{ form.as_p }}
+                    <input type="hidden" value="location" name="choice" hidden>
+                    <button type="Report" class=" btn btn-primary">Tumour Location</button>
+                </form>
+            </div>
         </section>
     </div>
 </center>

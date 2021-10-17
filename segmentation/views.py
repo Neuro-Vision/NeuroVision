@@ -37,6 +37,10 @@ from segmentation.unet_v2 import *
 from django.views.decorators.csrf import csrf_exempt
 from sklearn.preprocessing import MinMaxScaler
 
+import itk                                                               
+import itkwidgets
+from ipywidgets import interact, interactive, IntSlider, ToggleButtons
+
 # Create your views here.
 
 @csrf_exempt
@@ -128,8 +132,10 @@ def options(request) :
             return redirect('/plot3D')
         elif option == 'gif' :
             return redirect('/3dgif')
-        elif option == 'report' :
-            return redirect('/report')
+        elif option == 'survival' :
+            return redirect('/survival')
+        elif option == '2d-slice' :
+            return redirect('/2d_view')
     else : 
         return render(request, "segmentation/option.html")
 
@@ -137,7 +143,7 @@ def gif(request) :
     return render(request, "segmentation/view_gif.html")
 
 
-def report(request) :
+def survival(request) :
     filename = 'segmentation/static/upload/segmented.nii'
     segmented = getMaskSizesForVolume(nib.load(filename).get_fdata())
     brain_vol = getBrainSizeForVolume(nib.load('segmentation/static/upload/flair.nii').get_fdata())
@@ -153,7 +159,7 @@ def report(request) :
     
     print(f'Survival days are : {survival_days}')
 
-    return render(request, "segmentation/report.html", {'Survival_Days' : survival_days})
+    return render(request, "segmentation/survival_days.html", {'Survival_Days' : survival_days})
 
 def getMaskSizesForVolume(image_volume):
     totals = dict([(1, 0), (2, 0), (3, 0)]) # {'1' : 0, '2' : 0,'3' : 0}
@@ -176,3 +182,27 @@ def getBrainSizeForVolume(image_volume):
         image_count=np.count_nonzero(arr)
         total=total+image_count
     return total
+
+def explore_2dimage(layer):
+
+    segmented = nib.load('segmentation/static/upload/segmented.nii').get_fdata()
+    brain_vol = nib.load('segmentation/static/upload/flair.nii').get_fdata()
+
+    segmented = np.array(segmented.tolist())
+    brain_vol = np.array(brain_vol.tolist())
+
+    plt.figure(figsize=(10, 5))
+    plt.imshow(brain_vol[:, :, layer], cmap="gray", interpolation='none')
+    plt.imshow(segmented[:, :, layer], cmap='RdPu', interpolation='none', alpha=0.5)
+    plt.title('Explore Layers of Brain MRI', fontsize=20)
+    plt.axis('off')
+    return layer
+
+def twoD_view(request) :
+    segmented = nib.load('segmentation/static/upload/segmented.nii').get_fdata()
+    segmented = np.array(segmented.tolist())
+    print(type(segmented))
+    interact(explore_2dimage, layer=(0, segmented.shape[2] - 1))
+    
+    # print(plot)
+    return render(request, 'segmentation/2d_view.html', {'plot' : plot})
