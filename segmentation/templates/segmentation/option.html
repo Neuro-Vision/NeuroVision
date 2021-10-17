@@ -33,6 +33,7 @@
             <p>Report</p>
             <form method="POST" class="post-form" enctype="multipart/form-data">
                 {% csrf_token %} {{ form.as_p }}
+                <input type="hidden" value="report" name="choice" hidden>
                 <button type="Report" class=" btn btn-secondary">Report</button>
             </form>
         </section>

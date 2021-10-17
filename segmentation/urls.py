@@ -7,5 +7,6 @@ urlpatterns = [
 			path('plot3D', views.plot_3D, name='plot3D'),
 			path('option/', views.options, name='option'),
    			path('download/', views.download_file, name='download_animation'),
-			path('3dgif', views.gif, name = "3dgif")
+			path('3dgif', views.gif, name = "3dgif"),
+			path('report', views.report, name = "report")
 		     ]

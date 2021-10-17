@@ -19,7 +19,7 @@ import urllib
 import base64
 import cv2
 from django.http import HttpResponseRedirect
-
+import pickle
 from .utils import handle_uploaded_file
 from segmentation.forms import UploadFile
 
@@ -35,7 +35,7 @@ from django.http import FileResponse
 
 from segmentation.unet_v2 import *
 from django.views.decorators.csrf import csrf_exempt
-
+from sklearn.preprocessing import MinMaxScaler
 
 # Create your views here.
 
@@ -135,3 +135,44 @@ def options(request) :
 
 def gif(request) :
     return render(request, "segmentation/view_gif.html")
+
+
+def report(request) :
+    filename = 'segmentation/static/upload/segmented.nii'
+    segmented = getMaskSizesForVolume(nib.load(filename).get_fdata())
+    brain_vol = getBrainSizeForVolume(nib.load('segmentation/static/upload/flair.nii').get_fdata())
+
+    segmented[2] = segmented[2]/brain_vol # for edema
+    segmented[3] = segmented[3]/brain_vol # for enhancing
+    total_tumor_density =  (segmented[1] +  segmented[2] +  segmented[3]) / brain_vol #for whole tumor
+    merged=np.array([[segmented[2],segmented[3] ,total_tumor_density]]) # add segments
+    # print(type(merged))
+    # print(merged)
+    pickled_model = pickle.load(open('segmentation/saved_models/linear-v1.sav', 'rb'))
+    survival_days = int(pickled_model.predict(merged)[0][0])
+    
+    print(f'Survival days are : {survival_days}')
+
+    return render(request, "segmentation/report.html", {'Survival_Days' : survival_days})
+
+def getMaskSizesForVolume(image_volume):
+    totals = dict([(1, 0), (2, 0), (3, 0)]) # {'1' : 0, '2' : 0,'3' : 0}
+    for i in range(100):
+        # flatten 2D image into 1D array and convert mask 4 to 3
+        arr=image_volume[:,:,i+22].flatten()
+        arr[arr == 4] = 3
+        
+        unique, counts = np.unique(arr, return_counts=True)
+        unique = unique.astype(int)
+        values_dict=dict(zip(unique, counts))
+        for k in range(1,4):
+            totals[k] += values_dict.get(k,0)
+    return totals
+
+def getBrainSizeForVolume(image_volume):
+    total = 0
+    for i in range(100):
+        arr=image_volume[:,:,i+22].flatten()
+        image_count=np.count_nonzero(arr)
+        total=total+image_count
+    return total
