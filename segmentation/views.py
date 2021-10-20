@@ -41,6 +41,11 @@ import itk
 import itkwidgets
 from ipywidgets import interact, interactive, IntSlider, ToggleButtons
 
+from io import StringIO
+import io
+import urllib, base64
+from io import BytesIO
+
 # Create your views here.
 
 @csrf_exempt
@@ -198,11 +203,115 @@ def explore_2dimage(layer):
     plt.axis('off')
     return layer
 
-def twoD_view(request) :
-    segmented = nib.load('segmentation/static/upload/segmented.nii').get_fdata()
-    segmented = np.array(segmented.tolist())
-    print(type(segmented))
-    interact(explore_2dimage, layer=(0, segmented.shape[2] - 1))
+# def twoD_view(request) :
+#     segmented = nib.load('segmentation/static/upload/segmented.nii').get_fdata()
+#     segmented = np.array(segmented.tolist())
+#     print(type(segmented))
+#     interact(explore_2dimage, layer=(0, segmented.shape[2] - 1))
     
-    # print(plot)
-    return render(request, 'segmentation/2d_view.html', {'plot' : plot})
+#     # print(plot)
+#     return render(request, 'segmentation/2d_view.html', {'plot' : plot})
+
+def twoD_view(request) :
+        graph_plots = {}    
+
+        segmented = nib.load('segmentation/static/upload/segmented.nii').get_fdata()
+        flair_data = nib.load('segmentation/static/upload/flair.nii').get_fdata()
+        origImage = flair_data
+        start_slice = 60
+
+
+        # Copy is Important
+
+        core = segmented.copy()
+        core[core != 1] = 0
+
+        edema = segmented.copy()
+        edema[edema != 2]= 0
+
+        enhancing = segmented.copy()
+        enhancing[enhancing != 4] = 0
+
+        context = flair_data
+
+        plt.switch_backend("AGG")
+
+        #for original image
+        plt.figure(figsize=(8,5))
+        plt.title("Orignal Image", fontsize=30)
+        plt.imshow(cv2.resize(context[:,:,start_slice], (128,128)), cmap="gray")
+        plt.tight_layout()
+        buffer = BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        img_png = buffer.getvalue()
+        graph = base64.b64encode(img_png)
+        graph = graph.decode('utf-8')
+        buffer.close()
+        graph_plots['original']=graph
+        plt.close()
+
+
+
+        #for all classes image
+        plt.figure(figsize=(8,5))
+        plt.title("All Classes", fontsize=30)
+        plt.imshow(segmented[:,:, start_slice], cmap="gray")
+        print(segmented[:,:, start_slice].shape)
+        plt.tight_layout()
+        buffer = BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        img_png = buffer.getvalue()
+        graph = base64.b64encode(img_png)
+        graph = graph.decode('utf-8')
+        buffer.close()
+        graph_plots['all']=graph
+        plt.close()
+
+        #for edema image
+        plt.figure(figsize=(8,5)) 
+        plt.title("Edema Image", fontsize=30)
+        plt.imshow(edema[:, :, start_slice], cmap="gray")
+        plt.tight_layout()
+        buffer = BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        img_png = buffer.getvalue()
+        graph = base64.b64encode(img_png)
+        graph = graph.decode('utf-8')
+        buffer.close()
+        graph_plots['edema']=graph
+        plt.close()
+
+        #for core image
+        plt.figure(figsize=(8,5))
+        plt.title("Core Image", fontsize=30)
+        plt.imshow(core[:,:, start_slice], cmap="gray")
+        plt.tight_layout()
+        buffer = BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        img_png = buffer.getvalue()
+        graph = base64.b64encode(img_png)
+        graph = graph.decode('utf-8')
+        buffer.close()
+        graph_plots['core']=graph
+        plt.close()
+
+        #for enhancing image
+        plt.figure(figsize=(8,5))
+        plt.title("Enhancing Image", fontsize=30)
+        plt.imshow(enhancing[:,:, start_slice], cmap="gray")
+        plt.tight_layout()
+        buffer = BytesIO()
+        plt.savefig(buffer, format="png")
+        buffer.seek(0)
+        img_png = buffer.getvalue()
+        graph = base64.b64encode(img_png)
+        graph = graph.decode('utf-8')
+        buffer.close()
+        graph_plots['enhancing']=graph
+        plt.close()
+
+        return render(request,'segmentation/2d_view.html' , graph_plots)

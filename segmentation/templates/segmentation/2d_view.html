@@ -1,2 +1,8 @@
-{% extends 'segmentation/base.html' %} {% block content %} {% autoescape off %} {{plot}} {% endautoescape %}
-<a href="{% url 'download_animation'%}">Download Plot</a> {%endblock%}
+{% extends 'segmentation/base.html' %} {% block content %}
+
+<img src="data:image/png;base64, {{original|safe}} " height="350" width="350">
+<img src="data:image/png;base64, {{all|safe}} " height="350" width="350">
+<img src="data:image/png;base64, {{edema|safe}} " height="350" width="350">
+<center>
+    <img src="data:image/png;base64, {{core|safe}} " height="350" width="350">
+    <img src="data:image/png;base64, {{enhancing|safe}} " height="350" width="350"></center> {% endblock %}
