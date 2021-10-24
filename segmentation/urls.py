@@ -9,5 +9,6 @@ urlpatterns = [
    			path('download/', views.download_file, name='download_animation'),
 			path('3dgif', views.gif, name = "3dgif"),
 			path('survival', views.survival, name = "survival"),
-			path('2d_view', views.twoD_view, name = "2d_view")
+			path('2d_view', views.twoD_view, name = "2d_view"),
+			path('tumor_location', views.tumor_location, name = "tumor_location")
 		     ]

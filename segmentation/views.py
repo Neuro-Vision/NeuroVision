@@ -141,6 +141,8 @@ def options(request) :
             return redirect('/survival')
         elif option == '2d-slice' :
             return redirect('/2d_view')
+        elif option == 'location' :
+            return redirect('/tumor_location')
     else : 
         return render(request, "segmentation/option.html")
 
@@ -315,3 +317,74 @@ def twoD_view(request) :
         plt.close()
 
         return render(request,'segmentation/2d_view.html' , graph_plots)
+
+def tumor_location(request) : 
+    
+    segmented = nib.load('segmentation/static/upload/segmented.nii').get_fdata()
+    orignal_data = nib.load('segmentation/static/upload/flair.nii').get_fdata()
+    max_axial = 0 # saves max non zero value
+    max_slice = 0 # saves max non zero slice number
+    output = {}
+
+    for i in range(0,155):
+        total_tumor_density =  np.count_nonzero(segmented[:, :, i])
+        if total_tumor_density > max_axial :
+            max_axial = total_tumor_density
+            max_slice = i
+
+    middle_range = segmented.shape[2] * 0.2
+    rest_range = segmented.shape[2] * 0.4
+
+    if max_slice <  rest_range : 
+        output['Axial']  = "bottom"
+    elif max_slice > rest_range and max_slice < (rest_range + middle_range) :
+        output['Axial']  = "middle"
+    else :
+        output['Axial']  = "top"
+
+
+    # for Coronal (Front to Back)
+    max_coronal = 0
+    max_slice = 0
+
+    for i in range(0,240) :
+        total_tumor_density =  np.count_nonzero(np.rot90(segmented[:, i, :]))
+
+    if total_tumor_density > max_coronal :
+        max_coronal = total_tumor_density
+        max_slice = i
+
+
+    middle_range = segmented.shape[1] * 0.2
+    rest_range = segmented.shape[1] * 0.4
+
+    if max_slice <  rest_range : 
+        output['Coronal']  = "Front"
+    elif max_slice > rest_range and max_slice < (rest_range + middle_range) :
+        output['Coronal']  = "Middle"
+    else :
+        output['Coronal']  = "Back"
+
+
+    # For Saggital (Right to Left)
+    max_saggital = 0
+    max_slice = 0
+
+    for i in range(0,240) :
+        total_tumor_density =  np.count_nonzero(np.rot90(segmented[i, :, :]))
+    if total_tumor_density > max_saggital :
+        max_saggital = total_tumor_density
+        max_slice = i
+
+    middle_range = segmented.shape[0] * 0.2
+    rest_range = segmented.shape[0] * 0.4
+
+    if max_slice <  rest_range : 
+        output['Saggital']  = "right"
+    elif max_slice > rest_range and max_slice < (rest_range + middle_range) :
+        output['Saggital']  = "middle"
+    else :
+        output['Saggital']  = "left"
+
+    print(output)
+    return render(request, 'segmentation/tumor_location.html', output)
